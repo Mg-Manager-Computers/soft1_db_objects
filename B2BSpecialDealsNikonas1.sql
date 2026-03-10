@@ -463,12 +463,12 @@ SELECT distinct
        into #headers
        FROM (SELECT DISTINCT [Κατηγορία] FROM #main_table) AS c
 
+drop table if exists #f
 SELECT "MG ID",
+       _hdr,
        "Κατηγορία",
        "Κατασκευαστής",
        "Description",
-       --"Ready Stock",
-       --"Des",
        "Ready Stock-Δεσμευμένα",
        "Incoming stock",
        "Actual Stock Retail only",
@@ -492,29 +492,82 @@ SELECT "MG ID",
        "New Special B2B Price €",
        "STATUS",
        "Προμηθευτής 1"
+into #f
 FROM (
     SELECT 0 AS _hdr, h.* FROM #headers AS h where "Κατηγορία" in (select "Κατηγορία" from #detailed) or "Κατηγορία" = 'Refurbirshed'
     UNION ALL
     SELECT 1 AS _hdr, d.* FROM #detailed AS d
 ) x
+
+select "MG ID",
+       "Κατηγορία",
+       "Κατασκευαστής",
+       "Description",
+       "Ready Stock-Δεσμευμένα",
+       "Incoming stock",
+       "Actual Stock Retail only",
+       "Actual Stock B2B",
+       "Εικονικά Αναμενόμενα",
+       "Final Stock",
+       "Actual 90 Days Sales (EXP)",
+       "Actual 30 Days Sales (Retail ID)",
+       "πρότυπο κόστος",
+       "FIFO Price",
+       "Net Retail τιμή",
+       "Actual Costs",
+       "Part No Export",
+       "Specs",
+       "Κωδικός (Συσχέτισης)",
+       "Απόθεμα Σχετικού Είδους",
+       "Αναμενόμενα Σχετικού Είδους",
+       "Δεσμευμένα Σχετικού Είδους",
+       "ACTUAL RETAIL",
+       "Last Special B2B Price €",
+       "New Special B2B Price €",
+       "STATUS",
+       "Προμηθευτής 1"
+       from (
+select *
+from (
+select * 
+from #f
+where "Κατηγορία" in ('Exp Laptops', 'Laptops', 'Exp Tablets', 'EXP Gaming Consoles', 'Exp PCs', 'Exp Monitors', 'EXP Air Fryers', 'EXP Blenders', 'Exp Keyboards', 'Exp Docking Stations', 'Exp Network')
 order by case when "Κατηγορία" =    'Exp Laptops'           then 1
                 when "Κατηγορία" =  'Laptops'               then 2
-                --when "Κατηγορία" =  'Refurbished Laptops'   then 3
-                when "Κατηγορία" =  'Exp Tablets'           then 4
-                when "Κατηγορία" =  'EXP Gaming Consoles'   then 5
-                when "Κατηγορία" =  'Exp PCs'               then 6
-                when "Κατηγορία" =  'Exp Monitors'          then 7
-                when "Κατηγορία" =  'EXP Air Fryers'        then 8
-                when "Κατηγορία" =  'EXP Blenders'          then 9
-                when "Κατηγορία" =  'Exp Keyboards'         then 10
-                when "Κατηγορία" =  'Exp Docking Stations'  then 11
-                when "Κατηγορία" =  'Exp Network'           then 12
-                when "Κατηγορία" =  '%efurbirshe%'          then 13
-                                                            else 14
+                when "Κατηγορία" =  'Exp Tablets'           then 3
+                when "Κατηγορία" =  'EXP Gaming Consoles'   then 4
+                when "Κατηγορία" =  'Exp PCs'               then 5
+                when "Κατηγορία" =  'Exp Monitors'          then 6
+                when "Κατηγορία" =  'EXP Air Fryers'        then 7
+                when "Κατηγορία" =  'EXP Blenders'          then 8
+                when "Κατηγορία" =  'Exp Keyboards'         then 9
+                when "Κατηγορία" =  'Exp Docking Stations'  then 10
+                when "Κατηγορία" =  'Exp Network'           then 11
                 end,
-                x._hdr,
+                _hdr,
                 "Final Stock" desc,
-                x.[Description]
+                [Description] OFFSET 0 ROWS) a
+union all
+select *
+from (
+select * 
+from #f
+where "Κατηγορία" not in ('Exp Laptops', 'Laptops', 'Exp Tablets', 'EXP Gaming Consoles', 'Exp PCs', 'Exp Monitors', 'EXP Air Fryers', 'EXP Blenders', 'Exp Keyboards', 'Exp Docking Stations', 'Exp Network')
+        and "Κατηγορία" not like  '%efurbish%' and "Κατηγορία" not like  '%efubish%' --'Refurbirshed'
+order by "Κατηγορία",
+                _hdr,
+                "Final Stock" desc,
+                [Description] OFFSET 0 ROWS) b 
+union all
+select *
+from (
+select * 
+from #f
+where Κατηγορία like '%efurbish%' or "Κατηγορία" like  '%efubish%'
+order by "Κατηγορία",
+                _hdr,
+                "Final Stock" desc,
+                [Description] OFFSET 0 ROWS) c) a
 
 drop table if exists #agores
 drop table if exists #pwlhseis
